@@ -1,0 +1,103 @@
+---
+- name: Deploy Java application as a systemd service
+  hosts: app
+  become: true
+  vars:
+    app_dir: /opt/project2
+    app_user: project2
+    app_group: project2
+    app_jar_src: "{{ playbook_dir }}/../project2_dummy_service-1.0-SNAPSHOT.jar"
+    app_jar_dest: "{{ app_dir }}/app.jar"
+    app_log_dir: /var/log/project2-dummy
+    app_log_path: "{{ app_log_dir }}/app.log"
+    app_agents: "{{ app_agents | default(50) }}"
+    app_port: "{{ app_port | default(8080) }}"
+  tasks:
+    - name: Install required packages (JDK + basic tools)
+      apt:
+        update_cache: true
+        name:
+          - openjdk-17-jre-headless
+          - ca-certificates
+          - curl
+        state: present
+
+    - name: Create application user
+      user:
+        name: "{{ app_user }}"
+        system: true
+        create_home: false
+        shell: /usr/sbin/nologin
+
+    - name: Create application directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_group }}"
+        mode: "0755"
+      loop:
+        - "{{ app_dir }}"
+        - "{{ app_log_dir }}"
+
+    - name: Copy application jar
+      copy:
+        src: "{{ app_jar_src }}"
+        dest: "{{ app_jar_dest }}"
+        owner: "{{ app_user }}"
+        group: "{{ app_group }}"
+        mode: "0644"
+
+    - name: Create systemd unit for the app
+      copy:
+        dest: /etc/systemd/system/project2-dummy.service
+        mode: "0644"
+        content: |
+          [Unit]
+          Description=Project 2 Dummy Java Service
+          After=network-online.target
+          Wants=network-online.target
+
+          [Service]
+          Type=simple
+          User={{ app_user }}
+          Group={{ app_group }}
+          WorkingDirectory={{ app_dir }}
+          ExecStart=/usr/bin/java -jar {{ app_jar_dest }} {{ app_log_path }} {{ app_agents }}
+          Restart=always
+          RestartSec=3
+          # Write stdout/stderr to log files (in addition to the app's own log)
+          StandardOutput=append:{{ app_log_dir }}/stdout.log
+          StandardError=append:{{ app_log_dir }}/stderr.log
+          # Reasonable defaults for small free-tier VMs
+          LimitNOFILE=65535
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: true
+
+    - name: Enable and start service
+      systemd:
+        name: project2-dummy
+        enabled: true
+        state: started
+
+    - name: Wait for TCP port to be open (best-effort)
+      wait_for:
+        host: 127.0.0.1
+        port: "{{ app_port }}"
+        timeout: 30
+      ignore_errors: true
+
+    - name: Check service status
+      command: systemctl is-active project2-dummy
+      register: svc
+      changed_when: false
+
+    - name: Fail if service not active
+      fail:
+        msg: "Service project2-dummy is not running (status={{ svc.stdout }})"
+      when: svc.stdout != "active"

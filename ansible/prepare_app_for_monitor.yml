@@ -1,0 +1,13 @@
+---
+- name: Prepare app server for monitoring checks (optional)
+  hosts: app
+  become: true
+  tasks:
+    - name: Install packages used by monitoring checks
+      apt:
+        update_cache: true
+        name:
+          - sysstat
+          - procps
+          - coreutils
+        state: present

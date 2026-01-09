@@ -1,0 +1,32 @@
+# monitoring.conf
+# This file is read on the MONITOR VM by /opt/monitoring/monitoring-agent.sh
+
+# Where to send notifications
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_USER="your_email@gmail.com"
+SMTP_PASS="APP_PASSWORD_OR_SMTP_PASSWORD"
+SMTP_FROM="your_email@gmail.com"
+SMTP_TO="destination_email@example.com"
+
+# How often to check (minutes)
+CHECK_INTERVAL_MINUTES="5"
+
+# Target app (prefer private IP inside the VNet)
+APP_HOST="10.42.1.4"
+APP_PORT="8080"
+APP_SSH_USER="azureuser"
+APP_SSH_KEY_PATH="/opt/monitoring/app_ssh_key"
+
+# What to monitor on the APP VM
+APP_SERVICE_NAME="project2-dummy"
+APP_LOG_PATH="/var/log/project2-dummy/app.log"
+
+# Thresholds (percent)
+CPU_THRESHOLD="85"
+MEM_THRESHOLD="85"
+DISK_THRESHOLD="90"
+
+# Maintenance notification (optional)
+MAINTENANCE_NOTIFY="false"
+MAINTENANCE_MESSAGE="Planned maintenance window (example)."

@@ -1,0 +1,9 @@
+[app]
+# app ansible_host=<APP_PUBLIC_IP> ansible_user=azureuser ansible_ssh_private_key_file=~/.ssh/id_rsa
+
+[monitor]
+# monitor ansible_host=<MONITOR_PUBLIC_IP> ansible_user=azureuser ansible_ssh_private_key_file=~/.ssh/id_rsa
+
+[all:vars]
+app_port=8080
+app_log_path=/var/log/project2-dummy/app.log

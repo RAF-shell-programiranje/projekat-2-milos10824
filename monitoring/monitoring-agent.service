@@ -1,0 +1,8 @@
+[Unit]
+Description=Project 2 Monitoring Agent (checks APP VM and emails alerts)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/monitoring/monitoring-agent.sh /etc/monitoring/monitoring.conf

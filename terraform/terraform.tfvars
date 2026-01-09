@@ -1,0 +1,16 @@
+
+# Copy this file to terraform.tfvars and adjust values.
+location           = "northeurope"
+resource_group_name = "projekat2-rg"
+prefix             = "p2"
+admin_username     = "azureuser"
+vm_size            = "Standard_B2s"
+
+# IMPORTANT: set to your public IP/32 (example):
+# allowed_ssh_cidr = "93.86.12.34/32"
+allowed_ssh_cidr   = "0.0.0.0/0"
+
+app_port           = 8080
+
+# Put the path to your SSH public key:
+ssh_public_key_path = "../.keys/project2_id_rsa.pub"
